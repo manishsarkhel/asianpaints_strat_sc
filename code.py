@@ -29,62 +29,52 @@ def reset_game():
 def calculate_results(delivery_freq, inventory_policy, dealer_incentive, demand_type):
     
     # 1. Base Costs (Efficiency Levers)
-    # 4x delivery is expensive, 1x is cheap
     logistics_cost = 80 if delivery_freq == "4x Daily (Responsive)" else 30
-    
-    # High buffer is expensive, Lean is cheap
     inventory_cost = 50 if inventory_policy == "High Buffer (Responsive)" else 20
-    
-    # Matching Birla's margins is expensive
     incentive_cost = 60 if dealer_incentive == "Match Birla (High)" else 20
     
     total_opex = logistics_cost + inventory_cost + incentive_cost
 
-    # 2. Service Level Calculation (The Trap)
-    # The market demands High Responsiveness. Efficiency hurts service level.
+    # 2. Service Level Calculation
     service_score = 0
     
     if delivery_freq == "4x Daily (Responsive)":
         service_score += 40
     else:
-        service_score += 10 # Penalty for slow delivery
+        service_score += 10 
         
     if inventory_policy == "High Buffer (Responsive)":
         service_score += 40
     else:
-        service_score += 10 # Penalty for stockouts
+        service_score += 10 
         
     if dealer_incentive == "Match Birla (High)":
         service_score += 20
     else:
-        service_score += 5 # Penalty for unhappy dealers
+        service_score += 5 
 
-    # 3. Apply Volatility (The Difficulty Multiplier)
-    # If demand is "Festival" or "Volatile", 'Efficiency' choices are penalized double
+    # 3. Apply Volatility (Difficulty Multiplier)
     if demand_type != "Stable":
         if inventory_policy == "Lean (Efficient)":
-            service_score -= 30 # Massive stockout penalty
+            service_score -= 30 
         if delivery_freq == "1x Daily (Efficient)":
-            service_score -= 20 # Customers won't wait
+            service_score -= 20 
 
-    # Clamp score 0-100
     service_score = max(0, min(100, service_score))
 
-    # 4. Market Share Impact (The Permanent Damage)
-    # If Service Score < 70, you lose share to Birla PERMANENTLY
+    # 4. Market Share Impact
     share_change = 0
     if service_score >= 85:
-        share_change = 0.5 # Small gain
+        share_change = 0.5 
         feedback = "Dealers are happy. Availability is high."
     elif service_score >= 60:
-        share_change = -1.5 # Slow bleed
+        share_change = -1.5 
         feedback = "Dealers are grumbling. Some are stocking Birla Opus alongside yours."
     else:
-        share_change = -5.0 # Hemorrhage
+        share_change = -5.0 
         feedback = "DISASTER! Stockouts during peak demand. Dealers are furious and aggressively pushing Birla Opus."
 
     # 5. Financials
-    # Revenue depends on Market Share and Demand
     demand_multiplier = 1.5 if demand_type == "Festival Season" else 1.0
     actual_revenue = (DEMAND_BASE * demand_multiplier) * (st.session_state['market_share'] / 100) * (service_score / 100) * 0.5
     
@@ -109,8 +99,9 @@ with st.sidebar:
     st.header(f"Quarter: {st.session_state['period']} / {MAX_PERIODS}")
     
     share_delta = 0
+    # FIX: Ensure key access matches the save key (Market_Share_End)
     if len(st.session_state['history']) > 0:
-        share_delta = st.session_state['market_share'] - st.session_state['history'][-1]['market_share_end']
+        share_delta = st.session_state['market_share'] - st.session_state['history'][-1]['Market_Share_End']
         
     st.metric("💰 Cash Reserve", f"₹{st.session_state['cash']:.0f} Cr")
     st.metric("📈 Market Share", f"{st.session_state['market_share']:.1f}%", delta=f"{share_delta:.1f}%")
@@ -137,7 +128,6 @@ if st.session_state['game_over']:
     st.stop()
 
 # --- SCENARIO GENERATOR ---
-# Randomize environment for the current period
 np.random.seed(st.session_state['period'] * 99)
 scenario_roll = np.random.random()
 if scenario_roll < 0.3:
@@ -178,7 +168,7 @@ if submitted:
     st.session_state['cash'] += profit
     prev_share = st.session_state['market_share']
     st.session_state['market_share'] += share_change
-    st.session_state['birla_share'] -= share_change # Zero sum game mostly
+    st.session_state['birla_share'] -= share_change 
     st.session_state['last_feedback'] = feedback
     
     # Record History
