@@ -220,11 +220,3 @@ if st.session_state['history']:
         with col2:
             st.markdown("##### Profit Trend")
             st.bar_chart(hist_df.set_index("Quarter")['Profit'])
-
-# Strategic Hint Logic (Teaching Moment)
-#with st.expander("Show Strategic Hint (Cheat Sheet)"):
-#    st.markdown("""
-#    * **Implied Uncertainty:** When the scenario is "Festival" or "Volatile", Uncertainty is HIGH.
-#    * **Strategic Fit:** High Uncertainty requires a **Responsive Supply Chain** (4x Delivery, Buffer Stock).
-#    * **The Trap:** If you choose "Efficient" (Lean/1x Delivery) during a Festival, you might save ₹50 Cr in logistics, but you will lose ₹100 Cr in lost sales due to stockouts, plus your market share will drop permanently.
-#    """)
